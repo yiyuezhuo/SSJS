@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<link rel="stylesheet" type="text/css" href="css/handsontable.min.css">
+		<link rel="stylesheet" type="text/css" href="css/jquery-ui.css">
+		<script src="js/handsontable.full.min.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/jquery-ui.js"></script>
+		<script src="js/d3.min.js"></script>
+		<script src="js/stat.js"></script>
+		<script src="js/pandas.js"></script>
+	</head>
+	<body>
+		<div id="tabs">
+			<ul>
+				<li><a href="#tabs-1">数据源</a></li>
+				<li><a href="#tabs-2">数据预览</a></li>
+				<li><a href="#tabs-3">建立模型</a></li>
+				<li><a href="#tabs-4">输出</a></li>
+			</ul>
+			<div id="tabs-1">
+				<p>数据源</p>
+				<input type="file" id="inputFile"><br>
+				<button id="inputLoad">载入数据</button>
+			</div>
+			<div id="tabs-2">
+				<p>数据预览</p>
+				<div id="divTable"></div>
+			</div>
+			<div id="tabs-3">
+				<p>建立模型</p>
+				<div><!-- 单个总体均值检验选择器 -->
+				<p>已知标准差均值检验</p>
+				<p>检验变量<br><select id="selectVariable"></select></p>
+				<p>要检验的均值<br><input type="text" id="inputMean"></p>
+				<p>已知标准差<br><input type="text" id="inputStd"></p>
+				<button id="buttonTest">进行检验</button>
+				<button id="buttonDesc">描述统计</button>
+				</div>
+			</div>
+			<div id="tabs-4">
+				<p>输出</p>
+				<p id="pOutput"></p>
+				<div id="divTableOutput"></div>
+			</div>
+		</div>
+	</body>
+	<script src="js/logic.js"></script>
+</html>
