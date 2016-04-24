@@ -62,6 +62,39 @@
 		return boardcastReduce(func,array1,array2,reduceShape,stack);
 	}
 	
+	function gradientDescentStep(X,Y,P,func,grad,alpha){
+		// X=[[1,2],[3,4],[5,6]] Y=[1,2] P=[0,0,0] (init) func=(X,P)|->y grad=(P1,P2,P3)|->(1,1,-1)
+		// sum_i 2*(X[i]-f(X[i],P))*(-\grad(f(X[i],P)))
+		var rl=d3.range(X.length).map(function(i){
+			return grad(X,P).mult(-2*alpha*(Y[i]-func(X,P)))
+		});
+		return rl.reduce(function(x,y){
+			return x.add(y);
+		});
+	}
+	
+	function gradientDescent(X,Y,P,func,grad,alpha,n){
+		d3.range(n).forEach(function(i){
+			P=gradientDescentStep(X,Y,P,func,grad,alpha);
+		})
+		return P;
+	}
+	
+	function solve(X,Y,P){
+		P=P||d3.range(X[0].length).map(function(x){
+			return 0;
+		})
+		n=100;
+		alpha=0.1;
+		var func=function(X,P){
+			return X.dot(P);
+		};
+		var grad=function(X,P){
+			return X;
+		}
+		return gradientDescent(X,Y,P,func,grad,alpha,n);
+	}
+	
 	Array.prototype.shape=function(){
 		if(this[0].length){
 			return [this.length].concat(this[0].shape());
@@ -106,18 +139,30 @@
 		var left=this;
 		var shape1=left.shape();
 		var shape2=right.shape();
-		var mat=[];
-		for(i=0;i<shape1[0];i++){
-			var row=[];
-			for(j=0;j<shape2[1];j++){
-				var a=d3.sum(d3.range(shape1[1]).map(function(k){
-					return left[i][k]*right[k][j];
-				}));
-				row.push(a);
-			}
-			mat.push(row);
+		if(shape1.length===1 && shape2.length===1){
+			return d3.sum(d3.range(shape1[0]).map(function(i){
+				return left[i]*right[i];
+			}))
 		}
-		return mat;
+		else if(shape2.length===1){
+			return left.map(function(row){
+				return row.dot(right);
+			});
+		}
+		else{
+			var mat=[];
+			for(i=0;i<shape1[0];i++){
+				var row=[];
+				for(j=0;j<shape2[1];j++){
+					var a=d3.sum(d3.range(shape1[1]).map(function(k){
+						return left[i][k]*right[k][j];
+					}));
+					row.push(a);
+				}
+				mat.push(row);
+			}
+			return mat;
+		}
 	}
 	
 	Array.prototype.mean=function(){
@@ -127,5 +172,7 @@
 	Array.prototype.std=function(){
 		return d3.deviation(this);
 	}
+	
+	window.linalg={solve:solve};
 	
 })();
