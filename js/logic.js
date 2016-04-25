@@ -43,14 +43,32 @@ function updateOption(){
 	selection.exit().remove();
 }
 
+// Calculate width of text from DOM element or string. By Phil Freo <http://philfreo.com>
+$.fn.textWidth = function(text, font) {
+    if (!$.fn.textWidth.fakeEl) $.fn.textWidth.fakeEl = $('<span>').hide().appendTo(document.body);
+    $.fn.textWidth.fakeEl.text(text || this.val() || this.text()).css('font', font || this.css('font'));
+    return $.fn.textWidth.fakeEl.width();
+};
+
+
 function renderTable(dom,df){
 	dom.textContent='';
-	return new Handsontable(dom,{
+	var rowHeaderWidth=d3.max(df.index.map(function(text){
+		return $.fn.textWidth(text);
+	}));
+	var percent=1.2;
+	rowHeaderWidth=Math.max(rowHeaderWidth,32);
+	rowHeaderWidth*=percent;
+	console.log(rowHeaderWidth);
+	var table=new Handsontable(dom,{
 				data:df.data,
 				colHeaders:df.columns,
 				rowHeaders:df.index,
-				contextMenu:true
+				contextMenu:true,
+				manualColumnResize:true,
+				rowHeaderWidth:rowHeaderWidth
 			});
+	return table;
 }
 
 !function(){

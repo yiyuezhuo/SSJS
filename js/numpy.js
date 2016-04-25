@@ -62,11 +62,11 @@
 		return boardcastReduce(func,array1,array2,reduceShape,stack);
 	}
 	
-	function gradientDescentStep(X,Y,P,func,grad,alpha){
+	function gradientDescentStep(X,Y,P,func,grad){
 		// X=[[1,2],[3,4],[5,6]] Y=[1,2] P=[0,0,0] (init) func=(X,P)|->y grad=(P1,P2,P3)|->(1,1,-1)
 		// sum_i 2*(X[i]-f(X[i],P))*(-\grad(f(X[i],P)))
 		var rl=d3.range(X.length).map(function(i){
-			return grad(X,P).mult(-2*alpha*(Y[i]-func(X,P)))
+			return grad(X[i],P).mult(2*(Y[i]-func(X[i],P)))
 		});
 		return rl.reduce(function(x,y){
 			return x.add(y);
@@ -75,7 +75,7 @@
 	
 	function gradientDescent(X,Y,P,func,grad,alpha,n){
 		d3.range(n).forEach(function(i){
-			P=gradientDescentStep(X,Y,P,func,grad,alpha);
+			P=P.add(gradientDescentStep(X,Y,P,func,grad,alpha).mult(alpha));
 		})
 		return P;
 	}
@@ -84,8 +84,8 @@
 		P=P||d3.range(X[0].length).map(function(x){
 			return 0;
 		})
-		n=100;
-		alpha=0.1;
+		n=10000;
+		alpha=0.01;
 		var func=function(X,P){
 			return X.dot(P);
 		};
@@ -93,6 +93,14 @@
 			return X;
 		}
 		return gradientDescent(X,Y,P,func,grad,alpha,n);
+	}
+	
+	function inverse(X){
+		return d3.range(X.length).map(function(i){
+			var Y=d3.range(X.length).map(function(j){return 0;});
+			Y[i]=1;
+			return solve(X,Y);
+		}).T();
 	}
 	
 	Array.prototype.shape=function(){
@@ -171,6 +179,14 @@
 	
 	Array.prototype.std=function(){
 		return d3.deviation(this);
+	}
+	
+	Array.prototype.T=function(){
+		return d3.transpose(this);
+	}
+	
+	Array.prototype.inv=function(){
+		return inverse(this);
 	}
 	
 	window.linalg={solve:solve};

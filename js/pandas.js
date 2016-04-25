@@ -103,7 +103,7 @@
 			return that.typeList[i]==='number';
 		});
 		var records=columns.map(function(key){
-			var col=that.get(key);
+			var col=that.get(key).sort();
 			return {count:col.length,
 						mean:d3.mean(col),
 						std:d3.deviation(col),
@@ -113,7 +113,7 @@
 						'75%':d3.quantile(col,0.75),
 						max:d3.max(col)};
 		})
-		var df=DataFrame.createByRecords(records,['count','mean','std','25%','50%','75%','max']);
+		var df=DataFrame.createByRecords(records,['count','mean','std','min','25%','50%','75%','max']);
 		df.index=columns;
 		return df;
 	}
@@ -125,7 +125,7 @@
 	}
 	DataFrame.createByRecords=function(records,columns){
 		//records=[{name:"yyz",age:21},{name:'rat',age:1},...]
-		columns=columns || records[0].keys();
+		columns=columns || Object.keys(records[0]);
 		var index=d3.range(records.length);
 		var data=[];
 		records.forEach(function(record){
@@ -135,6 +135,15 @@
 			data.push(row);
 		})
 		return new DataFrame({data:data,index:index,columns:columns});
+	}
+	DataFrame.createByDict=function(dict,keyList){
+		keyList=keyList || Object.keys(dict);
+		var _data=keyList.map(function(key){
+			return dict[key];
+		});
+		var index=d3.range(_data[0].length);
+		var columns=keyList;
+		return new DataFrame({data:_data.T(),index:index,columns:columns})	
 	}
 	
 	window.pd={DataFrame:DataFrame};
