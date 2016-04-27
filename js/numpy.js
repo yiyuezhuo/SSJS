@@ -189,6 +189,38 @@
 		return inverse(this);
 	}
 	
+	function gamma(x,a,b){
+		//return np.sqrt(2*np.pi/x)*((1/np.e)*(x+1/(12*x-1/(10*x))))**x
+		return np.sqrt(2*Math.PI/x)*((1/Math.E)*Math.pow((x+1/(12*x-1/(10*x)))),x);
+	}
+	
+	function beta(a,b){
+		return gamma(a)*gamma(b)/gamma(a+b);
+	}
+	
+	function two_div(f,a,b,epsilon=1e-4):
+		while (true){
+			var test=(a+b)/2
+			if (b-a<epsilon)
+				return test;
+			if (f(test)===0)
+				return test;
+			else if (f(test)>0)
+				a,b=a,test;
+			else
+				a,b=test,b;
+		}
+	
+	
 	window.linalg={solve:solve};
+	window.np={solve:solve,
+						sqrt:Math.sqrt,
+						pi:Math.PI,
+						e:Math.E,
+						gamma:gamma,
+						beta:beta,
+						two_div:two_div,
+						gradientDescent:gradientDescent}
+	//anyway gamma is located in scipy.special for origin
 	
 })();
