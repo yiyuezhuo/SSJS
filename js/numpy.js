@@ -210,6 +210,11 @@
 			else
 				a,b=test,b;
 		}
+		
+	function linspace(start,end,size){
+		var step=(end-start)/(size-1);
+		return d3.range(start,end+step,step);
+	}
 	
 	
 	window.linalg={solve:solve};
@@ -220,7 +225,8 @@
 						gamma:gamma,
 						beta:beta,
 						two_div:two_div,
-						gradientDescent:gradientDescent}
+						gradientDescent:gradientDescent,
+						linspace:linspace}
 	//anyway gamma is located in scipy.special for origin
 	
 })();
