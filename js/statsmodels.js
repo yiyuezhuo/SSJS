@@ -18,7 +18,7 @@ function OLS(endog,exog,endogName,exogName){
 	this.endogName=endogName || 'y';
 }
 OLS.prototype.fit=function(){
-	var params=linalg.solve(this.exogValue,this.endogValue);
+	var params=np.linalg.solve(this.exogValue,this.endogValue);
 	return new FitResult(this,params);
 }
 OLS.createByFormula=function(formula,df){

@@ -1,0 +1,19 @@
+{
+	"source":"test/test2.py",
+	"target":"test/test2.js",
+	"include":"bin/backend.js",
+	"module_name":"stat3",
+	"export":[	"norms_cdf", 
+					"norms_ppf", 
+					"norm_cdf", 
+					"norm_ppf", 
+					"beta_cdf", 
+					"beta_ppf", 
+					"chi2_cdf", 
+					"chi2_ppf", 
+					"t_cdf", 
+					"t_ppf", 
+					"F_cdf", 
+					"F_ppf"],
+	"comment":"@Author yiyuezhuo"
+}

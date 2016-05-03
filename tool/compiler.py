@@ -17,8 +17,10 @@ def load_template(fname,tabMap='    '):
         s=f.read()
     return jinja2.Template(s.replace('\t',tabMap))
     
-function_template=load_template('function.js')
-list_compre_template=load_template('ListComp.js')
+function_template=load_template('template/function.js')
+list_compre_template=load_template('template/ListComp.js')
+tuple_assign_template=load_template('template/tuple_assign.js')
+
     
 
 def tab(doc,head='    '):
@@ -89,9 +91,14 @@ def parseReturn(node):
 def parseAssign(node):
     #col_offset=node.col_offset
     #TODO not implement multi assign 
-    targets=','.join([parse(target) for target in node.targets])
-    value=parse(node.value)
-    return 'var {}={};'.format(targets,value)
+    if type(node.targets[0])==ast.Name:
+        targets=','.join([parse(target) for target in node.targets])
+        value=parse(node.value)
+        return 'var {}={};'.format(targets,value)
+    elif type(node.targets[0])==ast.Tuple:
+        targets=[ parse(elt) for elt in node.targets[0].elts]
+        value=[ parse(elt) for elt in node.value.elts]
+        return tuple_assign_template.render(targets=targets,value=value)
     
 def parseBlock(nodeList):
     '''helper method'''
@@ -103,7 +110,7 @@ def parse_arg(node):
 def parse_arguments(node):
     return ','.join([parse_arg(nod) for nod in node.args])
     
-def parseFunctionDef(node):
+def parseFunctionDef(node,name=None):
     '''
     def f(a,b,c=2):
         dosomething...
@@ -126,7 +133,7 @@ def parseFunctionDef(node):
         dosomething...   
     }
     '''
-    name=node.name
+    name=node.name if name==None else name
     arg_name=[arg.arg for arg in node.args.args]
     defaults=node.args.defaults if hasattr(node.args,'defaults') else {}
     defaultOffset=len(arg_name)-len(defaults)
@@ -138,7 +145,11 @@ def parseFunctionDef(node):
     set_arg_name=set(arg_name)
     __args__=find_free_name('__args__',set_arg_name)
     __kwargs__=find_free_name('__kwargs__',set_arg_name)
-    body=tab(parseBlock(node.body))
+    if type(node.body)==list:
+        body=tab(parseBlock(node.body))
+    else:
+        body='return {}'.format(parse(node.body))
+    # if type(node.body)==list else parse(node.body))
     #print(defaultMap)
     code=function_template.render(func_name=name,args_s=__args__,
                              kwargs_s=__kwargs__,arg_name_list=arg_name,
@@ -168,32 +179,47 @@ def parseFunctionDef(node):
 '''
     
 def parseLambda(node):
-    args=parse_arguments(node.args)
-    body=parse(node.body)
-    return 'function({args}){{return {body};}}'.format(args=args,body=body)
+    return parseFunctionDef(node,name="")
+    #args=parse_arguments(node.args)
+    #body=parse(node.body)
+    #return 'function({args}){{return {body};}}'.format(args=args,body=body)
 
     
 def parseList(node):
     return '[{}]'.format(','.join([str(parse(nod)) for nod in node.elts]))
     
-
+def parseTuple(node):
+    return '[{}]'.format()
+    
+'''
 def parseIndex(node):
-    '''a[x] <- x'''
+    'a[x] <- x'
     index=parse(node.value)
     return '{{value}}[{index}]'.format(index=index)
     
 def parseSlice(node):
-    '''must give range impletion'''
+    'must give range impletion'
     lower=parse(node.lower)
     upper=parse(node.upper)
     step=parse(node.step)
-    return 'range({lower},{upper},{step}).map(function(i) {{{{ return {{value}}[i]; }}}});'.format(lower=lower,upper=upper,step=step)
     
+    return 'range({lower},{upper},{step}).map(function(i) {{{{ return {{value}}[i]; }}}})'.format(lower=lower,upper=upper,step=step)
+'''
+ 
 def parseSubscript(node):
     '''a[x]'''
     value=parse(node.value)
-    slice_=parse(node.slice)
-    return slice_.format(value=value)
+    #slice_=parse(node.slice)
+    #return slice_.format(value=value)
+    if type(node.slice)==ast.Index:
+        index=parse(node.slice.value)
+        return '{value}[{index}]'.format(value=value,index=index)
+    elif type(node.slice)==ast.Slice:
+        lower=parse(node.slice.lower)
+        upper=parse(node.slice.upper)
+        step=parse(node.slice.step)
+        return '{value}.slice({lower},{upper},{step})'.format(value=value,lower=lower,upper=upper,step=step)
+
     
 def parse_comprehension(node):
     ''' it can't return a indepent string '''
@@ -263,7 +289,7 @@ def parseTry(node):
 }}
 catch(e){{
 {catchBody}
-}}'''.format(tryBody=body,catchBody=handler)
+}}'''.format(tryBody=tab(body),catchBody=tab(handler))
     return code
     
 def parseCompare(node):
@@ -293,13 +319,43 @@ else{{
         return '''if({test}){{ 
 {body}
 }}'''.format(test=test,body=body)
+
+def parseWhile(node):
+    test=parse(node.test)
+    body=tab(parseBlock(node.body))
+    return '''while({test}){{
+{body}
+}}'''.format(test=test,body=body)
     
+
+def parseExpr(node):
+    return parse(node.value)
+
+def parseRaise(node):
+    return 'throw {};'.format(parse(node.exc))
+    
+def parseStr(node):
+    s=node.s.replace('\n','\\n')
+    return '"{}"'.format(s)
     
 def parseModule(node):
     return parseBlock(node.body)
     
 def parseNone(node):
     return 'undefined'
+    
+def parseAssert(node):
+    test=parse(node.test)
+    return '''if({test}){{
+    throw("assert error")
+}}
+'''.format(test=test)
+
+def parseIfExp(node):
+    test=parse(node.test)
+    body=parse(node.body)
+    orelse=parse(node.orelse)
+    return '{test} ? {body} : {orelse}'.format(test=test,body=body,orelse=orelse)
     
         
 def parse(node):
@@ -315,7 +371,6 @@ def parse(node):
                  ast.FunctionDef:parseFunctionDef,
                  ast.UnaryOp:parseUnaryOp,
                  ast.List:parseList,
-                 ast.Index:parseIndex,
                  ast.Subscript:parseSubscript,
                  ast.ListComp:parseListComp,
                  ast.Try:parseTry,
@@ -324,10 +379,18 @@ def parse(node):
                  ast.Lambda:parseLambda,
                  ast.Module:parseModule,
                  ast.NameConstant:parseNameConstant,
-                 ast.Slice:parseSlice,
                  ast.BoolOp:parseBoolOp,
+                 ast.Raise:parseRaise,
+                 ast.While:parseWhile,
+                 ast.Expr:parseExpr,
+                 ast.Str:parseStr,
+                 ast.Assert:parseAssert,
+                 ast.IfExp:parseIfExp,
                  type(None):parseNone}
     return typeMapping[type(node)](node)
+    
+def transform(s):
+    return parse(ast.parse(s))
 
 '''
 res=ast.parse(code)
@@ -337,6 +400,8 @@ exp=return_.value
 
 print(parse(res))
 '''
-with open('test.py','rb') as f:
-    code=f.read().decode('utf8')
-res=ast.parse(code)
+
+if __name__=='__main__':
+    with open('test2.py','rb') as f:
+        code=f.read().decode('utf8')
+    res=ast.parse(code)

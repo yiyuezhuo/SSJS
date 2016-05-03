@@ -1,5 +1,5 @@
 
-!(function(){
+var np=(function(){
 	
 	function boardcastConstant(func,array,constant,shape){
 		if(shape.length===1){
@@ -198,9 +198,10 @@
 		return gamma(a)*gamma(b)/gamma(a+b);
 	}
 	
-	function two_div(f,a,b,epsilon=1e-4):
+	function two_div(f,a,b,epsilon){
+		epsilon=epsilon || 1e-4;
 		while (true){
-			var test=(a+b)/2
+			var test=(a+b)/2;
 			if (b-a<epsilon)
 				return test;
 			if (f(test)===0)
@@ -210,6 +211,7 @@
 			else
 				a,b=test,b;
 		}
+	}
 		
 	function linspace(start,end,size){
 		var step=(end-start)/(size-1);
@@ -217,8 +219,8 @@
 	}
 	
 	
-	window.linalg={solve:solve};
-	window.np={solve:solve,
+	//window.linalg={solve:solve};
+	return {solve:solve,
 						sqrt:Math.sqrt,
 						pi:Math.PI,
 						e:Math.E,
@@ -226,7 +228,15 @@
 						beta:beta,
 						two_div:two_div,
 						gradientDescent:gradientDescent,
-						linspace:linspace}
+						linspace:linspace,
+						abs:Math.abs,
+						sign:Math.sign,
+						arctan:Math.atan,
+						exp:Math.exp,
+						log:Math.log,
+						linalg:{
+							solve:solve
+						}}
 	//anyway gamma is located in scipy.special for origin
 	
 })();

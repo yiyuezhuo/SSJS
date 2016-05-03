@@ -2,14 +2,14 @@
 
 {{ iter }}.filter(function({{ target }}){
 	return {{ ifs }};
-}).map(function({{ target }})){
+}).map(function({{ target }}){
 	return {{ elt }};
-};
+})
 
 {%- else -%}
 
-{{ iter }}map(function({{ target }})){
+{{ iter }}.map(function({{ target }}){
 	return {{ elt }};
-};
+})
 
 {%- endif %}

@@ -54,7 +54,7 @@ def I3(x,a,b):
     elif b>1:
         return I3(x,a,b-1)+(1/(b-1))*U(x,a,b-1)
     else:
-        assert Exception("number vaild?")
+        raise Exception("number vaild?")
 
 def beta_cdf(x,a,b):
     #print(a%(1/2),b%(1/2))

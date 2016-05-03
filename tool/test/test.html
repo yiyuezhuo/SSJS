@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<!-- <script src="../bin/backend.js"></script> -->
+	<script src="../../js/numpy.js"></script>
+	<script src="test2.js"></script>
+	<body>
+	</body>
+	<script>
+	function log(){
+		var i,s;
+		var sl=[];
+		for(i=0;i<arguments.length;i++){
+			sl.push(String(arguments[i]));
+		}
+		s=sl.join(' ');
+		var p=document.createElement('p');
+		p.innerText=s;
+		document.body.appendChild(p);
+	}
+	
+	log('norm_cdf(3,0,1)',stat3.norm_cdf(0.95,0,1));
+	log('norm_ppf(0.975,0,1)',stat3.norm_ppf(0.975,0,1));
+	log('beta_cdf(1,2,3)',stat3.beta_cdf(0.975,2,3));
+	log('beta_ppf(0.5,2,3)',stat3.beta_ppf(0.975,2,3));
+	log("chi2_cdf(1,2)",stat3.chi2_cdf(1,2));
+	log("chi2_ppf(0.5,2)",stat3.chi2_ppf(0.5,2));
+	log('t_cdf(0.1,10)',stat3.t_cdf(0.1,10));
+	log('t_ppf(0.5,10)',stat3.t_ppf(0.5,10));
+	log('F_cdf(5,10,20)',stat3.F_cdf(5,10,20));
+	log('F_ppf(0.5,10,20)',stat3.F_ppf(0.5,10,20));
+	
+	
+	</script>
+</html>
